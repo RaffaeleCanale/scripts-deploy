@@ -1,0 +1,24 @@
+__deploy()
+{
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    case "$prev" in
+        "deploy" )
+            keys="`cat "__ROOT__/../projects.json" | jq -r '. | to_entries[] | .key'`"
+            COMPREPLY=( $(compgen -W "$keys" -- ${cur}) )
+            ;;
+        # "--target" )
+        #     keys="`cat "__ROOT__/../targets.json" | jq -r '. | to_entries[] | .key'`"
+        #     COMPREPLY=( $(compgen -W "$keys" -- ${cur}) )
+        #     ;;
+        # * )
+        #     if [[ "$cur" == -* ]]; then
+        #         COMPREPLY=( $(compgen -W "--target" -- ${cur}) )
+        #     fi
+        #     ;;
+    esac
+}
+
+complete -F __deploy deploy

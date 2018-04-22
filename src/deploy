@@ -1,0 +1,118 @@
+#!/bin/bash
+
+function declareConstants() {
+    $1 TARGETS "__ROOT__/../targets.json"
+    $1 PROJECTS "__ROOT__/../projects.json"
+}
+
+function getTargetConfig() {
+    if [ ! -f "$TARGETS" ]; then
+        apply $1 "${3:-null}"
+    else
+        local result=`cat "$TARGETS" | jq -r ".$2"`
+        if [ "$result" == "null" ]; then
+            apply $1 "${3:-null}"
+        else
+            apply $1 "$result"
+            return 0
+        fi
+    fi
+    return 1
+}
+
+function getProjectConfig() {
+    if [ ! -f "$PROJECTS" ]; then
+        apply $1 "${3:-null}"
+    else
+        local result=`cat "$PROJECTS" | jq -r ".$2"`
+        if [ "$result" == "null" ]; then
+            apply $1 "${3:-null}"
+        else
+            apply $1 "$result"
+            return 0
+        fi
+    fi
+    return 1
+}
+
+function printHelp() {
+    cat << EOF
+
+    Deploy a wx project using ssh.
+    Projects are described in `cyan "$PROJECTS"`.
+
+    Usage:
+    $PROGNAME `blue project`
+        Deploy a project.
+EOF
+}
+
+function loadOptions() {
+    # unusedBehaviour="IGNORE"
+    getOpt "--dry-run" dryRun
+}
+
+# 1. var name
+# 2. target
+function getWorkingDirectory() {
+    getTargetConfig $1 "[\"${2}\"].workingDirectory" || stop "Missing workingDirectory for target: ${2}"
+}
+
+# 1. var name
+# 2. project
+function getType() {
+    getProjectConfig $1 "[\"${2}\"].type" || stop "Missing type for project: $2"
+}
+
+# 1. var name
+# 2. project
+function getTargets() {
+    getProjectConfig _tmp "[\"${2}\"].target" || getProjectConfig _tmp "[\"${2}\"].targets" || stop "Missing target from $2"
+    eval "$1=($_tmp)"
+}
+
+# 1. var name
+# 2. project
+function getName() {
+    getProjectConfig $1 "[\"${2}\"].name" "$2"
+}
+
+# 1. user var
+# 2. host var
+# 3. target
+function getUserAndHost() {
+    getTargetConfig $1 "[\"${3}\"].user" || stop "Missing user for target $3"
+    getTargetConfig $2 "[\"${3}\"].host" || stop "Missing host for target $3"
+}
+
+# 1. type
+# 2. working directory
+# 3. name
+function buildScript() {
+    cat "__ROOT__/scripts/$1" \
+        | sedeasy "__WD__" "$2" \
+        | sedeasy "__NAME__" "$3" \
+        | sedeasy "__HOME__" "\$HOME" \
+        | sedeasy "__DRY_RUN__" "$dryRun"
+}
+
+function run () {
+    getArg project
+    getType type "$project"
+    getName name "$project"
+    getTargets targets "$project"
+
+    for target in "${targets[@]}"; do
+        getWorkingDirectory _WD "$target"
+        script=`buildScript "$type" "$_WD" "$name"`
+
+        if [ "$target" == "$HOSTNAME" ]; then
+            eval "$script"
+        else
+            getUserAndHost user host "$target"
+            echo "$script" | ssh ${user}@${host}
+        fi
+    done
+}
+
+source "__STARTER__@v2"

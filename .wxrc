@@ -1,0 +1,10 @@
+{
+    "main": "deploy",
+    "files": [{
+        "name": "scripts-deploy/targets",
+        "output": "targets.json"
+    }, {
+        "name": "scripts-deploy/projects",
+        "output": "projects.json"
+    }]
+}
