@@ -1,29 +1,3 @@
-#!/usr/bin/env bash
-function stop() {
-    echo "$@"
-    exit 1
-}
-
-function RUN() {
-    if __DRY_RUN__; then
-        echo "DRY-RUN: $@"
-    else
-        echo "RUNNING: $@"
-        "$@" || stop "Failed"
-    fi
-}
-
-function copyConfig() {
-    cat << EOF > '.wxrc'
-{
-    "config": [
-        "docker-compose.yml",
-        "start.sh",
-        "hosts"
-    ]
-}
-EOF
-}
 
 function copyRcLocal() {
     cat << EOF | sudo tee "/etc/rc.local" > /dev/null
@@ -44,25 +18,25 @@ exit 0
 EOF
 }
 
-function copyHosts() {
-    cat "/etc/hosts.d/original.hosts" "/etc/hosts.d/wx.hosts" | sudo tee "/etc/hosts" > /dev/null
-}
+# function copyHosts() {
+#     cat "/etc/hosts.d/original.hosts" "/etc/hosts.d/wx.hosts" | sudo tee "/etc/hosts" > /dev/null
+# }
 
 dir="__WD__"
 if [ ! -d "$dir" ]; then
-    RUN mkdir "$dir"
+    RUN mkdir -p "$dir"
 fi
 RUN cd "$dir"
 RUN copyConfig
 RUN wx-client-config --project root
 
 # HOSTS
-if [ ! -f "/etc/hosts.d/original.hosts" ]; then
-    RUN sudo mkdir -p "/etc/hosts.d"
-    RUN sudo cp "/etc/hosts" "/etc/hosts.d/original.hosts"
-fi
-RUN sudo cp "hosts" "/etc/hosts.d/wx.hosts"
-RUN copyHosts
+# if [ ! -f "/etc/hosts.d/original.hosts" ]; then
+#     RUN sudo mkdir -p "/etc/hosts.d"
+#     RUN sudo cp "/etc/hosts" "/etc/hosts.d/original.hosts"
+# fi
+# RUN sudo cp "hosts" "/etc/hosts.d/wx.hosts"
+# RUN copyHosts
 
 # START
 RUN copyRcLocal

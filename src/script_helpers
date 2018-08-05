@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+function stop() {
+    echo "$@"
+    exit 1
+}
+
+function RUN() {
+    if __DRY_RUN__; then
+        echo "DRY-RUN: $@"
+    else
+        echo "RUNNING: $@"
+        "$@" || stop "Failed"
+    fi
+}
+
+function initRepository() {
+    repositoryDirectory="__WD__/__NAME__"
+    if [ -d "$repositoryDirectory" ]; then
+        RUN cd "$repositoryDirectory"
+        RUN git pull
+    else
+        RUN git clone git@github.com:RaffaeleCanale/__NAME__.git "$repositoryDirectory"
+        RUN cd "$repositoryDirectory"
+    fi
+}

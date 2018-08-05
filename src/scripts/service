@@ -1,22 +1,8 @@
-#!/usr/bin/env bash
-function stop() {
-    echo "$@"
-    exit 1
-}
 
-function RUN() {
-    if __DRY_RUN__; then
-        echo "DRY-RUN: $@"
-    else
-        echo "RUNNING: $@"
-        "$@" || stop "Failed"
-    fi
-}
+initRepository
 
-RUN cd "__WD__/__NAME__"
-RUN git pull
 RUN wx-client-config
-RUN cd ..
+RUN cd "__WD__"
 RUN docker-compose stop __NAME__
 RUN docker-compose build __NAME__
 RUN docker-compose up -d __NAME__

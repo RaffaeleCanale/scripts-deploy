@@ -1,23 +1,11 @@
-#!/usr/bin/env bash
-function stop() {
-    echo "$@"
-    exit 1
-}
-
-function RUN() {
-    if __DRY_RUN__; then
-        echo "DRY-RUN: $@"
-    else
-        echo "RUNNING: $@"
-        "$@" || stop "Failed"
-    fi
-}
-
-dir="__WD__/__NAME__"
-if [ ! -d "$dir" ]; then
-    RUN mkdir "$dir"
-fi
-RUN cd "$dir"
-RUN wx-client-config
-RUN cd ..
-RUN docker-compose restart __NAME__
+#
+# initRepository
+#
+# dir="__WD__/__NAME__"
+# if [ ! -d "$dir" ]; then
+#     RUN mkdir -p "$dir"
+# fi
+# RUN cd "$dir"
+# RUN wx-client-config
+# RUN cd ..
+# RUN docker-compose restart __NAME__

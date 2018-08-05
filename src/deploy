@@ -42,14 +42,21 @@ function printHelp() {
     Projects are described in `cyan "$PROJECTS"`.
 
     Usage:
-    $PROGNAME `blue project`
-        Deploy a project.
+    $PROGNAME `green project`
+        Deploy a project. Should be one of:
+$(cyan "`cat "$PROJECTS" | jq -r 'keys[]' | sed -e 's/^/        - /'`")
+
+    Options:
+    `blue "--dry-run"`: Print commands without executing them
+    `blue "--targets"` `cyan targets`: Override the project target. Should be one of
+$(cyan "`cat "$TARGETS" | jq -r 'keys[]' | sed -e 's/^/        - /'`")
 EOF
 }
 
 function loadOptions() {
     # unusedBehaviour="IGNORE"
     getOpt "--dry-run" dryRun
+    getOpt "--targets?" optTargets -1
 }
 
 # 1. var name
@@ -67,7 +74,11 @@ function getType() {
 # 1. var name
 # 2. project
 function getTargets() {
-    getProjectConfig _tmp "[\"${2}\"].target" || getProjectConfig _tmp "[\"${2}\"].targets" || stop "Missing target from $2"
+    if [ "${#optTargets[@]}" -eq 0 ]; then
+        getProjectConfig _tmp "[\"${2}\"].target" || getProjectConfig _tmp "[\"${2}\"].targets" || stop "Missing target from $2"
+    else
+        _tmp="${optTargets[@]}"
+    fi
     eval "$1=($_tmp)"
 }
 
@@ -89,7 +100,7 @@ function getUserAndHost() {
 # 2. working directory
 # 3. name
 function buildScript() {
-    cat "__ROOT__/scripts/$1" \
+    cat "__ROOT__/script_helpers" "__ROOT__/scripts/$1" \
         | sedeasy "__WD__" "$2" \
         | sedeasy "__NAME__" "$3" \
         | sedeasy "__HOME__" "\$HOME" \
@@ -105,7 +116,6 @@ function run () {
     for target in "${targets[@]}"; do
         getWorkingDirectory _WD "$target"
         script=`buildScript "$type" "$_WD" "$name"`
-
         if [ "$target" == "$HOSTNAME" ]; then
             eval "$script"
         else
@@ -114,5 +124,6 @@ function run () {
         fi
     done
 }
+
 
 source "__STARTER__@v2"
