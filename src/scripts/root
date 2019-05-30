@@ -13,9 +13,30 @@ function copyRcLocal() {
 # bits.
 #
 # By default this script does nothing.
-__WD__/start.sh || exit 1
+# __WD__/start.sh || exit 1
+bash -c 'source __HOME__/.bashrc && __WD__/start.sh'
 exit 0
 EOF
+}
+
+function copyConfig() {
+    cat << EOF | sudo tee ".wxrc" > /dev/null
+{
+    "config": [
+        "docker-compose.yml",
+        "start.sh"
+    ]
+}
+EOF
+}
+
+function addCrontab() {
+    line='@reboot bash -c "source __HOME__/.bashrc && __WD__/start.sh > __HOME__/boot.log.txt 2>&1" &'
+    if crontab -l; then
+        ( crontab -l | grep -v -F "$line" ; echo "$line" ) | crontab -
+    else
+        echo "$line" | crontab -
+    fi
 }
 
 # function copyHosts() {
@@ -39,4 +60,5 @@ RUN wx-client-config --project root
 # RUN copyHosts
 
 # START
-RUN copyRcLocal
+# RUN copyRcLocal
+RUN addCrontab

@@ -1,0 +1,31 @@
+
+function create_service_file() {
+    sudo cat << EOF | tee "$service_file" > /dev/null
+[Unit]
+Description=__NAME__
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/bin/bash -c "cd \"__WD__/__NAME__\" && $start"
+
+[Install]
+WantedBy=xsession.target
+EOF
+}
+
+service_file="__HOME__/.config/systemd/user/__NAME__.service"
+
+RUN mkdir -p "$(dirname "$service_file")"
+
+initRepository
+
+getConfig build
+getConfig start
+
+RUN wx-client-config
+RUN eval "$build"
+RUN create_service_file
+RUN sudo chmod 664 "$service_file"
+RUN systemctl --user daemon-reload
+RUN systemctl --user stop __NAME__
+RUN systemctl --user start __NAME__

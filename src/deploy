@@ -116,6 +116,7 @@ function run () {
     for target in "${targets[@]}"; do
         getWorkingDirectory _WD "$target"
         script=`buildScript "$type" "$_WD" "$name"`
+        info "Deploying for `green "$target"`"
         if [ "$target" == "$HOSTNAME" ]; then
             eval "$script"
         else

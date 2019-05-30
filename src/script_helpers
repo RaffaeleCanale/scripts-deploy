@@ -24,3 +24,12 @@ function initRepository() {
         RUN cd "$repositoryDirectory"
     fi
 }
+
+function getConfig() {
+    result="$(cat "__WD__/__NAME__/.wxrc" | jq -r '.'$1'')"
+    if [ "$result" == "null" ]; then
+        echo "c"
+        stop "Missing config for $1"
+    fi
+    eval "$1=\"$result\""
+}
