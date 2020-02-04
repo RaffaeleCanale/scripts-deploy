@@ -88,6 +88,13 @@ function getName() {
     getProjectConfig $1 "[\"${2}\"].name" "$2"
 }
 
+# 1. var name
+# 2. project
+# 3. name
+function getRepository() {
+    getProjectConfig $1 "[\"${2}\"].repository" "git@github.com:RaffaeleCanale/$name.git"
+}
+
 # 1. user var
 # 2. host var
 # 3. target
@@ -99,9 +106,11 @@ function getUserAndHost() {
 # 1. type
 # 2. working directory
 # 3. name
+# 4. repository
 function buildScript() {
     cat "__ROOT__/script_helpers" "__ROOT__/scripts/$1" \
         | sedeasy "__WD__" "$2" \
+        | sedeasy "__REPOSITORY__" "$4" \
         | sedeasy "__NAME__" "$3" \
         | sedeasy "__HOME__" "\$HOME" \
         | sedeasy "__DRY_RUN__" "$dryRun"
@@ -112,10 +121,11 @@ function run () {
     getType type "$project"
     getName name "$project"
     getTargets targets "$project"
+    getRepository repository "$project" "$name"
 
     for target in "${targets[@]}"; do
         getWorkingDirectory _WD "$target"
-        script=`buildScript "$type" "$_WD" "$name"`
+        script=`buildScript "$type" "$_WD" "$name" "$repository"`
         info "Deploying for `green "$target"`"
         if [ "$target" == "$HOSTNAME" ]; then
             eval "$script"
