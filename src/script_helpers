@@ -20,7 +20,7 @@ function initRepository() {
         RUN cd "$repositoryDirectory"
         RUN git pull
     else
-        RUN git clone git@github.com:RaffaeleCanale/__NAME__.git "$repositoryDirectory"
+        RUN git clone __REPOSITORY__ "$repositoryDirectory"
         RUN cd "$repositoryDirectory"
     fi
 }
