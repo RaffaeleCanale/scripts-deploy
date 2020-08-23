@@ -1,5 +1,6 @@
 {
     "main": "deploy",
+    "project": "scripts-deploy",
     "config": [
         "targets.json",
         "projects.json"
