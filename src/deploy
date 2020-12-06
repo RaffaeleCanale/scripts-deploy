@@ -73,6 +73,12 @@ function getType() {
 
 # 1. var name
 # 2. project
+function getPath() {
+    getProjectConfig $1 "[\"${2}\"].path" || stop "Missing path for project: $2"
+}
+
+# 1. var name
+# 2. project
 function getTargets() {
     if [ "${#optTargets[@]}" -eq 0 ]; then
         getProjectConfig _tmp "[\"${2}\"].target" || getProjectConfig _tmp "[\"${2}\"].targets" || stop "Missing target from $2"
@@ -92,7 +98,7 @@ function getName() {
 # 2. project
 # 3. name
 function getRepository() {
-    getProjectConfig $1 "[\"${2}\"].repository" "git@github.com:RaffaeleCanale/$name.git"
+    getProjectConfig $1 "[\"${2}\"].repository" "git@github.com:RaffaeleCanale/$3.git"
 }
 
 # 1. user var
@@ -107,11 +113,13 @@ function getUserAndHost() {
 # 2. working directory
 # 3. name
 # 4. repository
+# 5. path
 function buildScript() {
     cat "__ROOT__/script_helpers" "__ROOT__/scripts/$1" \
         | sedeasy "__WD__" "$2" \
         | sedeasy "__REPOSITORY__" "$4" \
         | sedeasy "__NAME__" "$3" \
+        | sedeasy "__PATH__" "$2/$5" \
         | sedeasy "__HOME__" "\$HOME" \
         | sedeasy "__DRY_RUN__" "$dryRun"
 }
@@ -122,10 +130,11 @@ function run () {
     getName name "$project"
     getTargets targets "$project"
     getRepository repository "$project" "$name"
+    getPath path "$project"
 
     for target in "${targets[@]}"; do
         getWorkingDirectory _WD "$target"
-        script=`buildScript "$type" "$_WD" "$name" "$repository"`
+        script=`buildScript "$type" "$_WD" "$name" "$repository" "$path"`
         info "Deploying for `green "$target"`"
         if [ "$target" == "$HOSTNAME" ]; then
             eval "$script"

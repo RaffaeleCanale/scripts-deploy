@@ -6,7 +6,7 @@ Description=__NAME__
 PartOf=graphical-session.target
 
 [Service]
-ExecStart=/bin/bash -c "cd \"__WD__/__NAME__\" && $start"
+ExecStart=/bin/bash -c "cd \"__PATH__\" && $start"
 
 [Install]
 WantedBy=xsession.target
@@ -22,7 +22,7 @@ initRepository
 getConfig build
 getConfig start
 
-RUN wx-client-config
+RUN wx-client-config || exit 1
 RUN eval "$build"
 RUN create_service_file
 RUN sudo chmod 664 "$service_file"

@@ -1,7 +1,7 @@
 
 initRepository
 
-RUN wx-client-config
+RUN wx-client-config || exit 1
 RUN cd "__WD__"
 RUN docker-compose stop __NAME__
 RUN docker-compose build __NAME__

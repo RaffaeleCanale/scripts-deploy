@@ -15,7 +15,7 @@ function RUN() {
 }
 
 function initRepository() {
-    repositoryDirectory="__WD__/__NAME__"
+    repositoryDirectory="__PATH__"
     if [ -d "$repositoryDirectory" ]; then
         RUN cd "$repositoryDirectory"
         RUN git pull
@@ -26,7 +26,7 @@ function initRepository() {
 }
 
 function getConfig() {
-    result="$(cat "__WD__/__NAME__/.wxrc" | jq -r '.'$1'')"
+    result="$(cat "__PATH__/.wxrc" | jq -r '.'$1'')"
     if [ "$result" == "null" ]; then
         echo "c"
         stop "Missing config for $1"

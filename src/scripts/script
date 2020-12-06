@@ -2,6 +2,6 @@
 initRepository
 
 if [ -f ".wxrc" ]; then
-    RUN wx-client-config
+    RUN wx-client-config || exit 1
 fi
 RUN wx install
