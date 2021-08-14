@@ -136,7 +136,7 @@ function run () {
         getWorkingDirectory _WD "$target"
         script=`buildScript "$type" "$_WD" "$name" "$repository" "$path"`
         info "Deploying for `green "$target"`"
-        if [ "$target" == "$HOSTNAME" ]; then
+        if [ "$target" == "$HOSTNAME" ] || [ "$target" == "local" ]; then
             eval "$script"
         else
             getUserAndHost user host "$target"

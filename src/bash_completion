@@ -13,6 +13,9 @@ __deploy()
                 COMPREPLY=( $(compgen -W "$keys" -- ${cur}) )
             fi
             ;;
+        "-*" )
+            COMPREPLY=( $(compgen -W "--targets" -- ${cur}) )
+            ;;
         "--target"|"--targets" )
             keys="`cat "__ROOT__/../targets.json" | jq -r '. | to_entries[] | .key'`"
             COMPREPLY=( $(compgen -W "$keys" -- ${cur}) )
